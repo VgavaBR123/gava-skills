@@ -1,0 +1,13 @@
+{
+    "name": "hydra-tools",
+    "owner": {
+        "name": "Hydra"
+    },
+    "plugins": [
+        {
+            "name": "sdd-plugin",
+            "source": "./plugins/sdd-plugin",
+            "description": "Workflow Spec-Driven Development (SDD)"
+        }
+    ]
+}
