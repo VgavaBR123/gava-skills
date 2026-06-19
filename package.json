@@ -1,0 +1,23 @@
+{
+  "name": "gava-sdd",
+  "version": "1.0.0",
+  "description": "Scaffold de Spec-Driven Development (SDD) para qualquer IDE — instala AGENTS.md e templates de spec/plan/tasks no seu projeto.",
+  "bin": {
+    "gava-sdd": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "portable/",
+    "plugins/sdd-plugin/skills/spec-driven-development/templates/"
+  ],
+  "keywords": ["sdd", "spec-driven-development", "spec-kit", "agents-md", "scaffold", "ai-coding"],
+  "author": "Gava",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VgavaBR123/gava-skills.git"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
