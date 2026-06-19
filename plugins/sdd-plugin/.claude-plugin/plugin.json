@@ -1,5 +1,8 @@
 {
     "name": "sdd-plugin",
-    "description": "Spec-Driven Development workflow",
-    "version": "1.0.0"
+    "description": "Spec-Driven Development workflow (baseado no GitHub spec-kit)",
+    "version": "1.0.0",
+    "author": {
+        "name": "Gava"
+    }
 }
