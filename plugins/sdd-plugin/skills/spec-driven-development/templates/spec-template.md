@@ -47,10 +47,16 @@ entregando Y"]
 ## Requisitos *(obrigatório)*
 
 ### Requisitos Funcionais
-- **FR-001**: O sistema DEVE [capacidade específica]
-- **FR-002**: O sistema DEVE [capacidade específica]
-- **FR-003**: Usuários DEVEM conseguir [interação-chave]
-- **FR-004**: O sistema DEVE [requisito de dados]
+
+> Escreva cada requisito em **sintaxe EARS** (ver `reference/ears-syntax.md`):
+> Ubíquo ("O sistema DEVE..."), Evento ("QUANDO... o sistema DEVE..."),
+> Estado ("ENQUANTO... o sistema DEVE..."), Indesejado ("SE... ENTÃO o sistema
+> DEVE...") ou Opcional ("ONDE... o sistema DEVE..."). Um requisito por frase.
+
+- **FR-001**: O sistema DEVE [capacidade sempre ativa]
+- **FR-002**: QUANDO [gatilho], o sistema DEVE [resposta]
+- **FR-003**: SE [condição de erro], ENTÃO o sistema DEVE [tratamento]
+- **FR-004**: ENQUANTO [estado], o sistema DEVE [comportamento contínuo]
 
 *Exemplo de requisito ainda indefinido:*
 - **FR-00X**: O sistema DEVE autenticar via [NEEDS CLARIFICATION: método não
@@ -68,6 +74,15 @@ entregando Y"]
 - **SC-001**: [ex.: "Usuário completa o cadastro em menos de 2 minutos"]
 - **SC-002**: [ex.: "Sistema suporta 1000 usuários simultâneos sem degradação"]
 - **SC-003**: [ex.: "90% dos usuários completam a tarefa principal na 1ª tentativa"]
+
+## Fora de Escopo *(obrigatório)*
+
+> Declare explicitamente o que esta feature NÃO fará. Funciona como barreira:
+> impede que a IA adicione dependências e recursos não solicitados.
+
+- [ex.: "Login via OAuth externo está fora de escopo desta feature"]
+- [ex.: "App mobile fica para uma feature futura"]
+- [ex.: "Não cobre migração de dados legados"]
 
 ## Premissas
 - [Premissa sobre usuários-alvo]

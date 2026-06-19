@@ -24,6 +24,32 @@ verificáveis, cada uma produzindo um documento que a fase seguinte consome.
 Esta skill replica o fluxo do GitHub spec-kit (https://github.com/github/spec-kit)
 de forma genérica (sem depender da CLI `specify` nem de linguagem específica).
 
+## Quando NÃO usar SDD
+
+O fluxo completo tem custo. Pule-o (e use prompt direto) para trabalho trivial:
+adicionar um campo opcional a uma tabela estável, ajuste cosmético de UI, fix de
+uma linha, spike exploratório descartável. O overhead de spec + plano + tarefas
+só compensa quando há **complexidade, integração ou risco**: features novas,
+APIs/contratos, sistemas legados sensíveis, ou geração de código por agente que
+precisa de fronteiras claras. Em dúvida sobre uma tarefa pequena, pergunte ao
+usuário se ele quer o fluxo formal ou um prompt direto.
+
+## Níveis de rigor (escolha no início)
+
+A especificação pode ter três graus de autoridade sobre o código. Confirme com
+o usuário qual adotar:
+
+- **Spec-first**: a spec guia a 1ª implementação e depois pode ser abandonada.
+  Bom para protótipos e spikes de vida curta. Não protege contra *drift*.
+- **Spec-anchored** *(padrão recomendado)*: spec e código evoluem juntos; toda
+  mudança de comportamento atualiza a spec, e testes derivados dela barram o
+  deploy se houver desalinhamento. Ideal para sistemas em produção.
+- **Spec-as-source**: a spec é o único artefato editado por humanos; o código é
+  100% gerado e nunca tocado à mão. Elimina *drift* por design, mas exige
+  ferramentas de geração maduras. Use só quando o usuário tiver esse pipeline.
+
+Na ausência de instrução, assuma **spec-anchored**.
+
 ## Princípios que governam o fluxo
 
 - **Intenção antes de implementação**: defina o *quê* e o *porquê* antes do *como*.
@@ -31,7 +57,11 @@ de forma genérica (sem depender da CLI `specify` nem de linguagem específica).
 - **Cada artefato é um portão (gate)**: só avance quando o anterior estiver sólido.
 - **Marque o que está vago** com `[NEEDS CLARIFICATION: ...]` em vez de adivinhar.
 - **Histórias independentes e testáveis**: cada uma deve, sozinha, entregar valor (MVP).
-- **Rastreabilidade**: requisitos -> tarefas devem ser conectáveis.
+- **Rastreabilidade requisito→teste→código**: cada tarefa de teste cita o ID do
+  requisito que cobre (ex.: `[FR-003]`), para que se possa rastrear do requisito
+  até o teste e o código. Requisito sem teste e teste sem requisito são defeitos.
+- **Requisitos em EARS**: requisitos funcionais seguem a sintaxe EARS (ver
+  `reference/ears-syntax.md`) para eliminar ambiguidade na fonte.
 
 ## As fases (ordem padrão)
 
@@ -48,9 +78,11 @@ existente, apenas confirme/atualize.
 ### 1. Especificação — `spec.md`
 Capture **o quê** e **o porquê**, nunca a stack. Use `templates/spec-template.md`.
 Inclui: histórias de usuário priorizadas (P1, P2...) e independentemente
-testáveis, requisitos funcionais (FR-001...), entidades-chave, critérios de
-sucesso mensuráveis e tecnologicamente neutros (SC-001...), edge cases e
-premissas. Tudo que estiver indefinido recebe `[NEEDS CLARIFICATION]`.
+testáveis, requisitos funcionais (FR-001...) **escritos em sintaxe EARS** (ver
+`reference/ears-syntax.md`), entidades-chave, critérios de sucesso mensuráveis e
+tecnologicamente neutros (SC-001...), edge cases, premissas e uma seção **Fora
+de Escopo** explícita (o que o sistema NÃO fará — barra acoplamentos e features
+não pedidas). Tudo que estiver indefinido recebe `[NEEDS CLARIFICATION]`.
 
 ### 2. Clarificação — atualiza `spec.md` (recomendado antes do plano)
 Faça ao usuário perguntas sequenciais por cobertura para resolver os
@@ -79,10 +111,22 @@ Foundational (bloqueante) -> US1 (P1, MVP) -> US2 -> US3 -> Polish.
 
 ### 5. Análise — relatório de consistência (opcional, antes de implementar)
 Faça uma checagem cruzada entre `spec.md`, `plan.md` e `tasks.md`: toda
-história tem tarefas? todo requisito está coberto? há tarefa órfã sem
-requisito? há over-engineering versus a constituição? Reporte lacunas ao
-usuário antes de codar. Para trabalho de alto risco, use um subagente de
-verificação.
+história tem tarefas? todo requisito (FR) está coberto por ao menos uma tarefa
+de teste que cite seu ID? há tarefa órfã sem requisito? há over-engineering
+versus a constituição? Reporte lacunas ao usuário antes de codar. Para trabalho
+de alto risco, use um subagente de verificação.
+
+#### Padrão multiagente adversarial (opcional, para features complexas)
+Quando houver muitas tarefas paralelizáveis ou alto risco, separe papéis com
+objetivos conflitantes, em vez de um único agente gerando e validando o próprio
+código:
+- **Coordenador**: decompõe o plano e delega tarefas isoladas.
+- **Implementador(es)**: geram o código de cada tarefa, em árvores isoladas.
+- **Verificador** (adversarial): só tenta quebrar — roda testes, confere o
+  alinhamento das saídas com os requisitos EARS e os testes de contrato antes
+  de autorizar o merge. Não é o mesmo agente que implementou.
+No Claude Code, mapeie isso para subagentes; o Verificador é um subagente
+dedicado de revisão. Mantenha sempre humano-no-loop nos portões (ver fase 6).
 
 ### 6. Implementação — código
 Só comece com constituição, spec, plan e tasks prontos. Execute as tarefas na
@@ -114,6 +158,7 @@ runtime.
 - `templates/plan-template.md` — plano técnico e estrutura
 - `templates/tasks-template.md` — quebra em tarefas
 - `reference/workflow.md` — fluxo resumido e checklist de portões
+- `reference/ears-syntax.md` — os 5 padrões EARS para requisitos sem ambiguidade
 
 Ao criar um artefato, leia o template correspondente, copie a estrutura e
 preencha com o conteúdo real do projeto — removendo comentários de instrução e

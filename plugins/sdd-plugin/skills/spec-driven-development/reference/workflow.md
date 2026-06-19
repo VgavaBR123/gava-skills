@@ -11,8 +11,9 @@ constitution -> specify -> clarify -> plan -> tasks -> analyze -> implement
 ### Portão 1 — depois da Especificação
 - [ ] Toda história tem prioridade (P1, P2...) e é independentemente testável
 - [ ] Existe pelo menos uma história P1 que sozinha vira MVP
-- [ ] Requisitos funcionais numerados (FR-00X) e verificáveis
+- [ ] Requisitos funcionais numerados (FR-00X), em sintaxe EARS e verificáveis
 - [ ] Critérios de sucesso mensuráveis e neutros de tecnologia
+- [ ] Seção "Fora de Escopo" preenchida explicitamente
 - [ ] Nenhum `[NEEDS CLARIFICATION]` pendente OU registrado para a fase de clarify
 - [ ] A spec NÃO menciona stack/tecnologia
 
@@ -31,7 +32,7 @@ constitution -> specify -> clarify -> plan -> tasks -> analyze -> implement
 
 ### Portão 4 — depois da Análise (antes de codar)
 - [ ] Cada história tem tarefas que a cobrem
-- [ ] Cada requisito (FR) está coberto por ao menos uma tarefa
+- [ ] Cada requisito (FR) está coberto por ao menos uma tarefa que cita seu ID
 - [ ] Sem tarefa órfã (sem requisito correspondente)
 - [ ] Sem over-engineering versus a constituição
 

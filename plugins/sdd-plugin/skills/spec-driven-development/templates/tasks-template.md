@@ -12,6 +12,8 @@ e teste independentes.
 - **[P]**: pode rodar em paralelo (arquivos diferentes, sem dependência)
 - **[História]**: a qual história pertence (US1, US2...)
 - Inclua o caminho exato do arquivo em cada tarefa
+- Tarefas de teste citam o(s) requisito(s) que cobrem por ID (ex.: `[FR-003]`),
+  garantindo rastreabilidade requisito→teste→código
 
 ---
 
@@ -35,8 +37,8 @@ e teste independentes.
 **Teste independente**: [como validar isolada]
 
 ### Testes US1 (OPCIONAL — só se pedido) ⚠️ escrever ANTES e ver falhar
-- [ ] T010 [P] [US1] Teste de contrato de [endpoint] em tests/...
-- [ ] T011 [P] [US1] Teste de integração de [jornada] em tests/...
+- [ ] T010 [P] [US1] Teste de contrato de [endpoint] em tests/... cobre [FR-00X]
+- [ ] T011 [P] [US1] Teste de integração de [jornada] em tests/... cobre [FR-00Y]
 
 ### Implementação US1
 - [ ] T012 [P] [US1] Criar modelo [Entidade] em src/models/...
