@@ -48,6 +48,15 @@ function init() {
     }
   }
 
+  // 3. Referência EARS junto dos templates (citada pelo spec-template.md)
+  const earsRef = path.join(
+    PKG_ROOT, 'plugins', 'sdd-plugin', 'skills',
+    'spec-driven-development', 'reference', 'ears-syntax.md'
+  );
+  if (fs.existsSync(earsRef)) {
+    copyFile(earsRef, path.join('specs', 'templates', 'reference', 'ears-syntax.md'));
+  }
+
   log('\n✅ Pronto! O AGENTS.md está na raiz e os templates em specs/templates/.');
   log('   Sua IDE já vai conduzir o desenvolvimento via SDD.');
   log('   Comece pedindo ao agente: "Cria a constituição do projeto".\n');

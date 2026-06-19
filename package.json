@@ -8,7 +8,8 @@
   "files": [
     "bin/",
     "portable/",
-    "plugins/sdd-plugin/skills/spec-driven-development/templates/"
+    "plugins/sdd-plugin/skills/spec-driven-development/templates/",
+    "plugins/sdd-plugin/skills/spec-driven-development/reference/ears-syntax.md"
   ],
   "keywords": ["sdd", "spec-driven-development", "spec-kit", "agents-md", "scaffold", "ai-coding"],
   "author": "Gava",
