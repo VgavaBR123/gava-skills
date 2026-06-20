@@ -9,6 +9,11 @@
             "name": "sdd-plugin",
             "source": "./plugins/sdd-plugin",
             "description": "Workflow Spec-Driven Development (SDD): conduz o projeto por fases — constituicao, especificacao, plano, tarefas e implementacao."
+        },
+        {
+            "name": "seguranca-plugin",
+            "source": "./plugins/seguranca-plugin",
+            "description": "Skills de seguranca e privacidade. Inclui auditoria-lgpd-fiscal (auditoria de conformidade LGPD para pipelines que tratam CPF/CNPJ: tokenizacao HMAC, criptografia AES-GCM, fronteira de dados para LLMs) e nist-pii-protection (base NIST SP 800-122: classificacao de PII, de-identificacao vs. anonimizacao e salvaguardas)."
         }
     ]
 }

@@ -49,3 +49,6 @@ bin-release/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# PDFs-fonte baixados para gerar skills (insumo, nao versionar)
+_books/
