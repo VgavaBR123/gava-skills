@@ -13,7 +13,7 @@
         {
             "name": "seguranca-plugin",
             "source": "./plugins/seguranca-plugin",
-            "description": "Skills de seguranca e privacidade. Inclui auditoria-lgpd-fiscal (auditoria de conformidade LGPD para pipelines que tratam CPF/CNPJ: tokenizacao HMAC, criptografia AES-GCM, fronteira de dados para LLMs) e nist-pii-protection (base NIST SP 800-122: classificacao de PII, de-identificacao vs. anonimizacao e salvaguardas)."
+            "description": "Skills de seguranca e privacidade. Inclui auditoria-lgpd-fiscal (auditoria de conformidade LGPD para pipelines que tratam CPF/CNPJ: tokenizacao HMAC, criptografia AES-GCM, fronteira de dados para LLMs), nist-pii-protection (base NIST SP 800-122: classificacao de PII, de-identificacao vs. anonimizacao) e boneh-shoup-applied-crypto (base de criptografia aplicada: semantica, CPA/CCA, AEAD/AES-GCM, MAC/HMAC, nonce)."
         }
     ]
 }

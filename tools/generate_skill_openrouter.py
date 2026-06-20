@@ -140,39 +140,87 @@ def lang_clause(lang):
 
 # ---------- Passos ----------
 
-def detect_structure(text, model, tally, lang):
-    sample = text[:14000]
+def detect_meta(text, model, tally):
+    """Pega titulo e autor com uma chamada minima (inicio do livro)."""
+    sample = text[:4000]
     msg = [
-        {"role": "system", "content": "Voce extrai a estrutura de livros tecnicos. Responda SOMENTE JSON valido."},
+        {"role": "system", "content": "Responda SOMENTE JSON valido."},
         {"role": "user", "content": (
-            "Abaixo esta o inicio (e o sumario) de um documento. Retorne JSON com:\n"
-            '{\"title\": str, \"author\": str, \"chapters\": [{\"n\": int, \"title\": str, \"anchor\": str}]}\n'
-            "Onde \"anchor\" e uma substring EXATA e curta (3-8 palavras) que marca o inicio do corpo "
-            "daquele capitulo/secao no texto (um titulo de cabecalho real, nao a linha do sumario). "
-            "Liste apenas capitulos/secoes substantivos (ignore agradecimentos, indices). "
-            "Maximo 12 capitulos.\n\n--- TEXTO ---\n" + sample)},
+            'Retorne {\"title\": str, \"author\": str} a partir deste inicio de '
+            "documento. Se nao houver autor claro, use \"\".\n\n--- TEXTO ---\n" + sample)},
     ]
-    out, usage = chat(msg, model, max_tokens=1200, temperature=0.0)
+    out, usage = chat(msg, model, max_tokens=200, temperature=0.0)
     tally.add(usage)
     try:
-        data = json.loads(strip_fences(out))
+        return json.loads(strip_fences(out))
     except json.JSONDecodeError:
-        sys.exit("ERRO: modelo nao retornou JSON de estrutura valido:\n" + out[:500])
-    return data
+        return {"title": "", "author": ""}
+
+
+# linha de topo de capitulo no indice: "<n> <Titulo> <pagina>"
+TOC_TOP = re.compile(r"^[ \t]*(\d{1,2})[ \t]+([A-Z][A-Za-z0-9 ,:'\-/()&]+?)[ \t]+\d{1,4}[ \t]*$", re.M)
+
+
+def parse_chapters(text):
+    """Detecta capitulos de topo direto do indice (regex, sem custo de token)."""
+    head = text[:250000]  # o indice fica no inicio
+    seen = {}
+    for m in TOC_TOP.finditer(head):
+        n = int(m.group(1))
+        title = re.sub(r"\s+", " ", m.group(2)).strip(" .")
+        if n not in seen and 2 <= len(title) <= 80:
+            seen[n] = title
+    return [{"n": n, "title": t} for n, t in sorted(seen.items())]
+
+
+# inicio do corpo de um capitulo: linha "Chapter N" (seguida do titulo)
+CH_BODY = re.compile(r"(?m)^[ \t]*Chapter[ \t]+(\d{1,2})[ \t]*$")
 
 
 def slice_chapters(text, chapters):
-    """Localiza cada anchor (ultima ocorrencia) e fatia o texto entre eles."""
-    positions = []
-    for ch in chapters:
-        anchor = (ch.get("anchor") or "").strip()
-        idx = text.rfind(anchor) if anchor else -1
-        positions.append((idx, ch))
-    # mantem so anchors achados, em ordem de posicao
-    found = sorted([p for p in positions if p[0] >= 0], key=lambda x: x[0])
+    """Fatia o corpo pelos marcadores 'Chapter N' (validados pelo titulo logo
+    abaixo). Mais robusto que casar o titulo solto. Cai de volta para o casamento
+    por titulo se nao houver marcadores 'Chapter N'."""
+    title_by_n = {c["n"]: c["title"] for c in chapters}
+    found = []
+    for m in CH_BODY.finditer(text):
+        n = int(m.group(1))
+        after = text[m.end():m.end() + 200].lstrip("\n ")
+        first_line = after.split("\n", 1)[0].strip()
+        toc_title = title_by_n.get(n)
+        if toc_title and re.search(re.escape(toc_title), after[:160], re.I):
+            found.append((m.start(), n, toc_title))
+        elif first_line and first_line[:1].isalpha() and 2 <= len(first_line) <= 80:
+            found.append((m.start(), n, first_line))
+
+    if not found:  # fallback: casamento por titulo isolado, em ordem
+        return _slice_by_title(text, chapters)
+
+    seen, uniq = set(), []
+    for pos, n, title in sorted(found):
+        if n not in seen:
+            seen.add(n)
+            uniq.append((pos, n, title))
     slices = []
-    for i, (start, ch) in enumerate(found):
-        end = found[i + 1][0] if i + 1 < len(found) else len(text)
+    for i, (pos, n, title) in enumerate(uniq):
+        end = uniq[i + 1][0] if i + 1 < len(uniq) else len(text)
+        slices.append(({"n": n, "title": title}, text[pos:end]))
+    return slices
+
+
+def _slice_by_title(text, chapters):
+    toc_matches = list(TOC_TOP.finditer(text[:250000]))
+    body_start = toc_matches[-1].end() if toc_matches else 0
+    positions, cursor = [], body_start
+    for ch in chapters:
+        pat = re.compile(r"(?m)^[ \t]*" + re.escape(ch["title"]) + r"[ \t]*$", re.I)
+        m = pat.search(text, cursor)
+        if m:
+            positions.append((m.start(), ch))
+            cursor = m.end()
+    slices = []
+    for i, (start, ch) in enumerate(positions):
+        end = positions[i + 1][0] if i + 1 < len(positions) else len(text)
         slices.append((ch, text[start:end]))
     return slices
 
@@ -213,9 +261,15 @@ def gen_support(kind, chapters_md, meta, model, tally, lang):
                        "definicoes soltas. Max 1200 tokens.", 1500),
     }
     fname, rule, mx = specs[kind]
+    titulo = {"glossary": "Glossário", "patterns": "Padrões e construções",
+              "cheatsheet": "Cheatsheet"}[kind]
     joined = "\n\n".join(chapters_md)[:60000]
     sys_p = "Voce consolida fichas de capitulo em um arquivo de apoio de skill. " + lang_clause(lang)
-    user = f"Livro: {meta.get('title')} ({meta.get('author')}).\nGere o {fname}.\nRegras: {rule}\n\n--- FICHAS ---\n{joined}"
+    user = (f"--- FICHAS DOS CAPITULOS (contexto) ---\n{joined}\n\n"
+            f"--- TAREFA ---\nLivro: {meta.get('title')} ({meta.get('author')}).\n"
+            f"Gere o conteudo do arquivo {fname}. Regras: {rule}\n"
+            f"Comece com um titulo H1 '# {titulo} — {meta.get('title')}'. "
+            "NAO continue/repita as fichas acima; produza um documento novo e consolidado.")
     out, usage = chat([{"role": "system", "content": sys_p}, {"role": "user", "content": user}], model, max_tokens=mx)
     tally.add(usage)
     return strip_fences(out)
@@ -228,18 +282,22 @@ def gen_skill_md(name, meta, chapters, chapters_md, model, tally, lang):
     sys_p = ("Voce escreve o SKILL.md mestre de uma skill de conhecimento. Corpo < 4000 tokens, "
              "conteudo mais importante PRIMEIRO. " + lang_clause(lang))
     user = (
-        f"Crie o SKILL.md para a skill '{name}'. Livro: {meta.get('title')} por {meta.get('author')}.\n"
+        "--- FICHAS DOS CAPITULOS (contexto para extrair os frameworks centrais) ---\n"
+        + ("\n\n".join(chapters_md))[:40000]
+        + "\n\n--- TABELA DE CAPITULOS (use exatamente) ---\n"
+        + f"| # | Titulo |\n|---|--------|\n{index}\n\n"
+        + f"--- TAREFA ---\nEscreva o arquivo SKILL.md completo para a skill '{name}'. "
+        f"Livro: {meta.get('title')} por {meta.get('author')}.\n"
+        "Comece a resposta DIRETAMENTE com '---' (frontmatter YAML). NAO repita as fichas acima.\n"
         "Estrutura obrigatoria:\n"
-        "1) Frontmatter YAML com name e description (description comeca com 'Use ao/quando', "
+        "1) Frontmatter YAML (name e description; description comeca com 'Use ao/quando' e "
         "lista os topicos centrais, sem resumir o passo a passo).\n"
-        "2) Titulo + linha de metadados.\n3) '## Como usar esta skill'.\n"
-        "4) '## Frameworks centrais' (os mais importantes, formulacao exata, ~2000 tokens).\n"
-        "5) '## Indice de capitulos' (use EXATAMENTE a tabela abaixo).\n"
+        "2) '# Titulo' + linha de metadados.\n3) '## Como usar esta skill'.\n"
+        "4) '## Frameworks centrais' (os mais importantes, formulacao exata, ~1500 tokens).\n"
+        "5) '## Indice de capitulos' (a tabela acima, com links chapters/chNN-...md).\n"
         "6) '## Indice de topicos' (termo -> chNN, alfabetico).\n"
         "7) '## Arquivos de apoio' (glossary.md, patterns.md, cheatsheet.md).\n"
-        "8) '## Escopo e limites'.\n\n"
-        f"Tabela de capitulos a incluir:\n| # | Titulo |\n|---|--------|\n{index}\n\n"
-        "Resumo das fichas para extrair os frameworks centrais:\n" + ("\n\n".join(chapters_md))[:40000])
+        "8) '## Escopo e limites'.")
     out, usage = chat([{"role": "system", "content": sys_p}, {"role": "user", "content": user}], model, max_tokens=3200)
     tally.add(usage)
     return strip_fences(out)
@@ -293,18 +351,22 @@ def main():
         ap.error("--text, --name e --out sao obrigatorios (ou use --check/--list-models)")
 
     with open(args.text, encoding="utf-8") as f:
-        text = f.read()
+        text = f.read().replace("\f", "\n")  # form-feed vira quebra de linha (cabecalhos de pagina)
     print(f"Texto: {len(text):,} chars (~{len(text)//4:,} tokens) | modelo: {args.model}")
 
     tally = Tally(args.model)
     print("1/4 detectando estrutura...")
-    meta = detect_structure(text, args.model, tally, args.lang)
-    chapters = meta.get("chapters", [])
-    print(f"    {meta.get('title')} - {len(chapters)} capitulos | {tally.line()}")
+    meta = detect_meta(text, args.model, tally)
+    chapters = parse_chapters(text)
+    print(f"    {meta.get('title')} - {len(chapters)} capitulos detectados no indice")
 
     slices = slice_chapters(text, chapters)
     if not slices:
-        sys.exit("ERRO: nenhum anchor de capitulo localizado no texto.")
+        sys.exit("ERRO: nenhum capitulo localizado no corpo do texto.")
+    if len(slices) < len(chapters):
+        print(f"    aviso: {len(slices)}/{len(chapters)} capitulos localizados no corpo "
+              "(os demais foram absorvidos no capitulo anterior).")
+    print(f"    {tally.line()}")
 
     print(f"2/4 gerando {len(slices)} capitulos...")
     chapters_md = []

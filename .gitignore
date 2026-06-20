@@ -52,3 +52,5 @@ Thumbs.db
 
 # PDFs-fonte baixados para gerar skills (insumo, nao versionar)
 _books/
+__pycache__/
+*.log

@@ -1,7 +1,7 @@
 {
     "name": "seguranca-plugin",
-    "description": "Skills de seguranca e privacidade: auditoria de conformidade LGPD para pipelines de dados fiscais (CPF/CNPJ), tokenizacao, criptografia e fronteira de dados para LLMs; e base de conhecimento NIST SP 800-122 para classificacao de PII, de-identificacao vs. anonimizacao e salvaguardas proporcionais.",
-    "version": "1.0.0",
+    "description": "Skills de seguranca e privacidade: auditoria de conformidade LGPD para pipelines de dados fiscais (CPF/CNPJ), tokenizacao, criptografia e fronteira de dados para LLMs; base NIST SP 800-122 para classificacao de PII e de-identificacao vs. anonimizacao; e base de criptografia aplicada (Boneh-Shoup) que fundamenta HMAC, AES-GCM, unicidade de nonce e CCA.",
+    "version": "1.1.0",
     "author": {
         "name": "Gava"
     }
