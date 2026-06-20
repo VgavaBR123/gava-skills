@@ -1,11 +1,17 @@
 # Gava Skills
 
-Ferramentas para conduzir o desenvolvimento de software pela metodologia
-**Spec-Driven Development (SDD)** — a especificação dirige o código, em fases
-curtas e verificáveis, baseada no [GitHub spec-kit](https://github.com/github/spec-kit).
+Coletânea de skills e plugins para desenvolvimento de software, distribuída pelo
+marketplace **gava-tools**. Hoje reúne dois plugins:
 
-Este repositório distribui o SDD de **três formas**, para funcionar tanto em
-qualquer IDE quanto nos produtos Claude.
+- **`sdd-plugin`** — **Spec-Driven Development (SDD)**: a especificação dirige o
+  código, em fases curtas e verificáveis, baseado no
+  [GitHub spec-kit](https://github.com/github/spec-kit).
+- **`seguranca-plugin`** — skills de **segurança e privacidade**: auditoria de
+  conformidade **LGPD** para pipelines fiscais (CPF/CNPJ), além de bases de
+  proteção de PII (NIST SP 800-122) e criptografia aplicada (Boneh-Shoup).
+
+O SDD é distribuído de **três formas**, para funcionar tanto em qualquer IDE
+quanto nos produtos Claude. O `seguranca-plugin` é distribuído pelo marketplace.
 
 ---
 
@@ -51,6 +57,36 @@ fala em criar spec, plano, tarefas, etc.
 
 Baixe [`portable/AGENTS.md`](./portable/AGENTS.md) e coloque na raiz do seu
 projeto. É autocontido (já traz a metodologia e os templates embutidos).
+
+---
+
+## 🔐 Segurança e privacidade — `seguranca-plugin`
+
+Skills de auditoria de segurança e conformidade.
+
+**No Claude Code / Cowork** — via marketplace:
+
+```bash
+/plugin marketplace add VgavaBR123/gava-skills
+/plugin install seguranca-plugin@gava-tools
+```
+
+**Em qualquer outra IDE** — a auditoria LGPD via npm (instala um `AGENTS-lgpd.md`,
+as referências e o scanner de PII no seu projeto):
+
+```bash
+npx gava-seguranca init
+```
+
+| Skill | Para quê |
+|-------|----------|
+| `auditoria-lgpd-fiscal` | Auditoria de conformidade **LGPD** para pipelines fiscais que tratam **CPF/CNPJ**: detecta PII em claro, valida tokenização (HMAC-SHA256) e criptografia (AES-256-GCM), e checa se dado identificável ou reversível cruza a fronteira para LLMs (Claude Code, Bedrock), APIs, dashboards ou arquivos. Cobre Python, SQL/PostgreSQL, DuckDB e ETL. |
+| `nist-pii-protection` | Base **NIST SP 800-122**: classificação de PII e a distinção entre de-identificação e anonimização. |
+| `boneh-shoup-applied-crypto` | Base de **criptografia aplicada** (Boneh-Shoup): segurança semântica, CPA/CCA, AEAD/AES-GCM, MAC/HMAC e unicidade de nonce — fundamenta as outras duas. |
+
+A `auditoria-lgpd-fiscal` é ativada automaticamente quando você pede para
+auditar, revisar ou validar segurança/conformidade de código que trata CPF/CNPJ
+ou cadastros fiscais (NFS-e, PGDAS, ITBI, IPTU), mesmo sem dizer "LGPD".
 
 ---
 
@@ -100,12 +136,23 @@ gava-skills/
 ├── .claude-plugin/
 │   └── marketplace.json          # catálogo do marketplace (gava-tools)
 ├── plugins/
-│   └── sdd-plugin/
+│   ├── sdd-plugin/
+│   │   ├── .claude-plugin/plugin.json
+│   │   └── skills/spec-driven-development/
+│   │       ├── SKILL.md
+│   │       ├── templates/        # constitution, spec, plan, tasks
+│   │       └── reference/        # fluxo e checklist de portões
+│   └── seguranca-plugin/
 │       ├── .claude-plugin/plugin.json
-│       └── skills/spec-driven-development/
-│           ├── SKILL.md
-│           ├── templates/        # constitution, spec, plan, tasks
-│           └── reference/        # fluxo e checklist de portões
+│       └── skills/
+│           ├── auditoria-lgpd-fiscal/   # SKILL.md + references/ + scripts/
+│           ├── nist-pii-protection/
+│           └── boneh-shoup-applied-crypto/
+├── packages/
+│   └── gava-seguranca/           # pacote npm da auditoria LGPD (npx gava-seguranca)
+│       ├── package.json
+│       ├── bin/cli.js
+│       └── assets/               # AGENTS-lgpd.md, references/, scan_pii.py
 ├── LICENSE
 └── README.md
 ```
@@ -115,9 +162,16 @@ gava-skills/
 ## 🔄 Publicando novas versões
 
 1. Faça as alterações na skill, no `AGENTS.md` ou nos templates.
-2. Suba a `version` no `package.json` **e** no `plugins/sdd-plugin/.claude-plugin/plugin.json`.
+2. Suba a `version` no manifesto do plugin alterado
+   (`plugins/sdd-plugin/.claude-plugin/plugin.json` ou
+   `plugins/seguranca-plugin/.claude-plugin/plugin.json`) — e, se mexer no CLI
+   do npm, também no `package.json`.
 3. `git add . && git commit -m "..." && git push`
-4. Publique no npm: `npm publish` (atualiza o `npx gava-sdd`).
+4. Publique no npm o(s) pacote(s) afetado(s):
+   - SDD: `npm publish` (na raiz) — atualiza o `npx gava-sdd`.
+   - Segurança/LGPD: `cd packages/gava-seguranca && npm publish` — atualiza o
+     `npx gava-seguranca`. (Se mexer nas referências/scanner da skill em
+     `plugins/seguranca-plugin`, copie as alterações para `assets/` antes.)
 5. Usuários do marketplace recebem com `/plugin marketplace update gava-tools`.
 
 > Valide antes: `claude plugin validate .`
