@@ -195,7 +195,7 @@ def gen_chapter(ch, body, model, tally, book_type, depth, lang):
         + "## Key takeaways\n1. <acionavel>\n\n## Conecta com\n- <outro cap/conceito>\n")
     user = (f"Capitulo n={ch.get('n')} titulo='{ch.get('title')}'. "
             f"Orcamento ~{budget} tokens (densidade, sem encher linguica). "
-            f"Use exatamente este molde de secoes:\n\n{tmpl}\n\n--- CONTEUDO DO CAPITULO ---\n{body[:48000]}")
+            f"Use exatamente este molde de secoes:\n\n{tmpl}\n\n--- CONTEUDO DO CAPITULO ---\n{body[:120000]}")
     out, usage = chat([{"role": "system", "content": sys_p}, {"role": "user", "content": user}],
                       model, max_tokens=int(budget * 1.6))
     tally.add(usage)
