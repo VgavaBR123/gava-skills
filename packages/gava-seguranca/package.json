@@ -1,6 +1,6 @@
 {
   "name": "gava-seguranca",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Auditoria de conformidade LGPD para pipelines de dados fiscais (CPF/CNPJ) em qualquer IDE — instala um AGENTS.md de auditoria, referências de tokenização/criptografia e um scanner de PII no seu projeto.",
   "bin": {
     "gava-seguranca": "bin/cli.js"

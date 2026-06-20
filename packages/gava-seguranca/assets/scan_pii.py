@@ -18,6 +18,15 @@ import sys
 import json
 import argparse
 
+# Garante UTF-8 na saída — sem isso o console do Windows (cp1252) quebra os
+# acentos e as setas (→) do relatório. Silencioso quando não é possível
+# (saída redirecionada ou Python < 3.7).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # ------------------------- validação de dígito verificador -------------------------
 
 def _valida_cpf(digs: str) -> bool:
