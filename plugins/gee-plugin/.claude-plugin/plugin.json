@@ -1,0 +1,8 @@
+{
+    "name": "gee-plugin",
+    "description": "Referência completa da API JavaScript do Google Earth Engine (GEE) — 1.747 funções fatiadas por tarefa (imagem, vetor, geometria, reducer, export/map, classificação), mais o conceito cliente/servidor, cheatsheet e exemplos comentados. Use para escrever código GEE correto sem pesquisar na web.",
+    "version": "1.0.0",
+    "author": {
+        "name": "Gava"
+    }
+}

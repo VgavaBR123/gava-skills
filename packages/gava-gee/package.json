@@ -1,0 +1,33 @@
+{
+  "name": "gava-gee",
+  "version": "1.0.0",
+  "description": "Referência completa da API JavaScript do Google Earth Engine (GEE) para qualquer IDE — instala um AGENTS-gee.md, a referência da API (1.747 funções) fatiada por tarefa, cheatsheet e exemplos no seu projeto.",
+  "bin": {
+    "gava-gee": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "assets/"
+  ],
+  "keywords": [
+    "google-earth-engine",
+    "gee",
+    "earth-engine",
+    "remote-sensing",
+    "geospatial",
+    "sentinel",
+    "landsat",
+    "agents-md",
+    "ai-coding"
+  ],
+  "author": "Gava",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VgavaBR123/gava-skills.git",
+    "directory": "packages/gava-gee"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
